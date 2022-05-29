@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+
+package org.wcode.proto.authormanagement;
+option go_package = "github.com/wcodesoft/author-management-service/grpc/go/author-management.proto";
+
+/*
+Author definition
+Next ID: 4
+*/
+message Author {
+  optional string uuid = 1;
+  string name = 2;
+  optional string picUrl = 3;
+}
+
+message RequestId {
+  string uuid = 1;
+}
+
+message Response {
+  bool success = 1;
+}
+
+message GetAuthorResponse {
+  repeated Author author = 1;
+}
+
+service AuthorManagement{
+
+  // Create a new Author entry on the service.
+  rpc CreateAuthor(Author) returns (Response);
+
+  // Update Author by the uuid if they exist in the system.
+  rpc UpdateAuthor(Author) returns (Response);
+
+  // Try to delete Author if it exists on the system.
+  rpc DeleteAuthor(RequestId) returns (Response);
+
+  // Get all authors from service.
+  rpc GetAuthors(google.protobuf.Empty) returns (GetAuthorResponse);
+
+  // Get Author by uuid if they exist in the system.
+  rpc GetAuthor(RequestId) returns (Author);
+}
