@@ -32,7 +32,7 @@ func (server *routeServer) GetAuthor(_ context.Context, requestId *authorGrpc.Re
 	return &authorGrpc.Author{
 		Uuid:   &id,
 		Name:   author.Name,
-		PicUrl: author.PicUrl,
+		PicUrl: author.PicURL,
 	}, err
 }
 
@@ -45,7 +45,7 @@ func (server *routeServer) GetAuthors(_ context.Context, _ *emptypb.Empty) (*aut
 		var rpcAuthor = authorGrpc.Author{
 			Uuid:   &authorUUID,
 			Name:   author.Name,
-			PicUrl: author.PicUrl,
+			PicUrl: author.PicURL,
 		}
 		array = append(array, &rpcAuthor)
 	}

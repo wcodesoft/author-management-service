@@ -42,7 +42,7 @@ func TestGetAuthor(t *testing.T) {
 	author, errGet := db.GetAuthor(ans.String())
 	assert.NoError(t, errGet, "Fail when retrieving author")
 	assert.Equal(t, "John Doe", author.Name)
-	assert.Equal(t, "johndoe", *author.PicUrl)
+	assert.Equal(t, "johndoe", *author.PicURL)
 }
 
 func TestGetAllAuthors(t *testing.T) {
@@ -67,7 +67,7 @@ func TestUpdateAuthor(t *testing.T) {
 	var author, errGet = db.GetAuthor(authorId.String())
 	assert.NoError(t, errGet, "Fail to get author")
 	assert.Equal(t, author.Name, "Author1")
-	assert.Equal(t, *author.PicUrl, "newPicUrl")
+	assert.Equal(t, *author.PicURL, "newPicUrl")
 }
 
 func TestUpdateAuthorNonExistentAuthor(t *testing.T) {

@@ -16,7 +16,7 @@ type Author struct {
 	gorm.Model
 	UUID   uuid.UUID `gorm:"primaryKey,default:uuid_generate_v4()"`
 	Name   string
-	PicUrl *string
+	PicURL *string
 }
 
 // NewDatabase Creates a new in memory Database and automatically migrates the
@@ -55,7 +55,7 @@ func (database *Database) AddAuthor(id *string, name string, picUrl *string) (*u
 		}
 		_uuid = newUUID
 	}
-	var author = Author{UUID: _uuid, Name: name, PicUrl: picUrl}
+	var author = Author{UUID: _uuid, Name: name, PicURL: picUrl}
 	result := database.Database.Create(&author)
 	return &author.UUID, result.Error
 }
@@ -80,7 +80,7 @@ func (database *Database) UpdateAuthor(uuid string, name string, picUrl *string)
 	if err != nil || author == nil {
 		return err
 	}
-	err = database.Database.Model(author).Updates(Author{Name: name, PicUrl: picUrl}).Error
+	err = database.Database.Model(author).Updates(Author{Name: name, PicURL: picUrl}).Error
 	return err
 }
 
