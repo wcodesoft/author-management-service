@@ -1,0 +1,94 @@
+package database
+
+import (
+	"github.com/google/uuid"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
+)
+
+// Database connector used on the service.
+type Database struct {
+	Database *gorm.DB
+}
+
+// Author type that will be stored in the Database.
+type Author struct {
+	gorm.Model
+	UUID   uuid.UUID `gorm:"primaryKey,default:uuid_generate_v4()"`
+	Name   string
+	PicUrl *string
+}
+
+// NewDatabase Creates a new in memory Database and automatically migrates the
+// Author model.
+func NewDatabase() Database {
+	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
+	if err != nil {
+		panic("Failed to connect to database.")
+	}
+	err = db.AutoMigrate(&Author{})
+	if err != nil {
+		panic("Failed to migrate to database.")
+	}
+	return Database{
+		Database: db,
+	}
+}
+
+func (database *Database) CloseDatabase() {
+	db, _ := database.Database.DB()
+	defer db.Close()
+}
+
+func (database *Database) AddAuthor(id *string, name string, picUrl *string) (*uuid.UUID, error) {
+	var _uuid uuid.UUID
+	if id != nil {
+		parsedUUID, err := uuid.Parse(*id)
+		if err != nil {
+			return nil, err
+		}
+		_uuid = parsedUUID
+	} else {
+		newUUID, err := uuid.NewUUID()
+		if err != nil {
+			return nil, err
+		}
+		_uuid = newUUID
+	}
+	var author = Author{UUID: _uuid, Name: name, PicUrl: picUrl}
+	result := database.Database.Create(&author)
+	return &author.UUID, result.Error
+}
+
+func (database *Database) GetAuthor(uuid string) (*Author, error) {
+	var author *Author
+	err := database.Database.First(&author, "uuid = ?", uuid).Error
+	if err != nil {
+		return nil, err
+	}
+	return author, nil
+}
+
+func (database *Database) GetAuthors() []Author {
+	var allAuthors []Author
+	database.Database.Find(&allAuthors)
+	return allAuthors
+}
+
+func (database *Database) UpdateAuthor(uuid string, name string, picUrl *string) error {
+	var author, err = database.GetAuthor(uuid)
+	if err != nil || author == nil {
+		return err
+	}
+	err = database.Database.Model(author).Updates(Author{Name: name, PicUrl: picUrl}).Error
+	return err
+}
+
+func (database *Database) DeleteAuthor(uuid string) error {
+	var author, err = database.GetAuthor(uuid)
+	if err != nil || author == nil {
+		return err
+	}
+	err = database.Database.Delete(&author).Error
+	return err
+}
