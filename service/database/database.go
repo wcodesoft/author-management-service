@@ -35,11 +35,14 @@ func NewDatabase() Database {
 	}
 }
 
+// CloseDatabase Closes that database that was open when creating a new database using the
+// NewDatabase method.
 func (database *Database) CloseDatabase() {
 	db, _ := database.Database.DB()
 	defer db.Close()
 }
 
+// AddAuthor Adds an author to the database.
 func (database *Database) AddAuthor(id *string, name string, picUrl *string) (*uuid.UUID, error) {
 	var _uuid uuid.UUID
 	if id != nil {
@@ -60,6 +63,7 @@ func (database *Database) AddAuthor(id *string, name string, picUrl *string) (*u
 	return &author.UUID, result.Error
 }
 
+// GetAuthor Queries an author on the database using the uuid and return it to the caller.
 func (database *Database) GetAuthor(uuid string) (*Author, error) {
 	var author *Author
 	err := database.Database.First(&author, "uuid = ?", uuid).Error
@@ -69,12 +73,14 @@ func (database *Database) GetAuthor(uuid string) (*Author, error) {
 	return author, nil
 }
 
+// GetAuthors Gets all authors on the database.
 func (database *Database) GetAuthors() []Author {
 	var allAuthors []Author
 	database.Database.Find(&allAuthors)
 	return allAuthors
 }
 
+// UpdateAuthor Updates the author entry with the new name and picUrl.
 func (database *Database) UpdateAuthor(uuid string, name string, picUrl *string) error {
 	var author, err = database.GetAuthor(uuid)
 	if err != nil || author == nil {
@@ -84,6 +90,7 @@ func (database *Database) UpdateAuthor(uuid string, name string, picUrl *string)
 	return err
 }
 
+// DeleteAuthor Deletes an author from the database with registered to the passed uuid.
 func (database *Database) DeleteAuthor(uuid string) error {
 	var author, err = database.GetAuthor(uuid)
 	if err != nil || author == nil {

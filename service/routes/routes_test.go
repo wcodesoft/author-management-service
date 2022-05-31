@@ -1,4 +1,4 @@
-package tests
+package routes
 
 import (
 	"context"
@@ -9,7 +9,6 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"service/database"
-	"service/routes"
 	"testing"
 )
 
@@ -35,7 +34,7 @@ func TestCreateAuthorRPC(t *testing.T) {
 	ctx := context.Background()
 	defer db.CloseDatabase()
 
-	server := routes.NewRouteServer(db)
+	server := NewRouteServer(db)
 	name := "Author Name"
 	picUrl := "picture"
 
@@ -55,7 +54,7 @@ func TestCreateAuthorWithUUIDRPC(t *testing.T) {
 	ctx := context.Background()
 	defer db.CloseDatabase()
 
-	server := routes.NewRouteServer(db)
+	server := NewRouteServer(db)
 	newUUID := getNewUUID()
 	name := "Author Name"
 	picUrl := "picture"
@@ -86,7 +85,7 @@ func TestGetUserRPC(t *testing.T) {
 	ctx := context.Background()
 	defer db.CloseDatabase()
 
-	server := routes.NewRouteServer(db)
+	server := NewRouteServer(db)
 	newUUID := getNewUUID()
 	name := "Author Name"
 	picUrl := "picture"
@@ -115,7 +114,7 @@ func TestDeleteUserRPC(t *testing.T) {
 	ctx := context.Background()
 	defer db.CloseDatabase()
 
-	server := routes.NewRouteServer(db)
+	server := NewRouteServer(db)
 	newUUID := getNewUUID()
 	name := "Author Name"
 	picUrl := "picture"
@@ -142,7 +141,7 @@ func TestUpdateUserRPC(t *testing.T) {
 	ctx := context.Background()
 	defer db.CloseDatabase()
 
-	server := routes.NewRouteServer(db)
+	server := NewRouteServer(db)
 	newUUID := getNewUUID()
 	name := "Author Name"
 	picUrl := "picture"
@@ -182,7 +181,7 @@ func TestGetAuthorsRPC(t *testing.T) {
 	ctx := context.Background()
 	defer db.CloseDatabase()
 
-	server := routes.NewRouteServer(db)
+	server := NewRouteServer(db)
 	newUUID := getNewUUID()
 	name := "Author Name"
 	picUrl := "picture"
