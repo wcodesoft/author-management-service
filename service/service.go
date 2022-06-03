@@ -32,7 +32,7 @@ func main() {
 	gRPCServer := grpc.NewServer()
 
 	db := database.NewDatabase()
-	authorManagement.RegisterAuthorManagementServer(gRPCServer, routes.NewRouteServer(db))
+	authorManagement.RegisterAuthorManagementServer(gRPCServer, routes.NewRoutes(db))
 
 	go func() {
 		if err := gRPCServer.Serve(lis); err != nil {

@@ -7,26 +7,27 @@ import (
 	"service/database"
 )
 
-type routeServer struct {
+type routes struct {
 	authorGrpc.UnimplementedAuthorManagementServer
-	db database.Database
+	db database.DbConnector
 }
 
-func NewRouteServer(database database.Database) *routeServer {
-	s := &routeServer{
+// NewRoutes Creates a new server with the passed connector.
+func NewRoutes(database database.DbConnector) *routes {
+	s := &routes{
 		db: database,
 	}
 	return s
 }
 
-func (server *routeServer) CreateAuthor(_ context.Context, author *authorGrpc.Author) (*authorGrpc.Response, error) {
+func (server *routes) CreateAuthor(_ context.Context, author *authorGrpc.Author) (*authorGrpc.Response, error) {
 	_, err := server.db.AddAuthor(author.Uuid, author.Name, author.PicUrl)
 	return &authorGrpc.Response{
 		Success: err == nil,
 	}, err
 }
 
-func (server *routeServer) GetAuthor(_ context.Context, requestId *authorGrpc.RequestId) (*authorGrpc.Author, error) {
+func (server *routes) GetAuthor(_ context.Context, requestId *authorGrpc.RequestId) (*authorGrpc.Author, error) {
 	author, err := server.db.GetAuthor(requestId.GetUuid())
 	id := author.UUID.String()
 	return &authorGrpc.Author{
@@ -36,7 +37,7 @@ func (server *routeServer) GetAuthor(_ context.Context, requestId *authorGrpc.Re
 	}, err
 }
 
-func (server *routeServer) GetAuthors(_ context.Context, _ *emptypb.Empty) (*authorGrpc.GetAuthorResponse, error) {
+func (server *routes) GetAuthors(_ context.Context, _ *emptypb.Empty) (*authorGrpc.GetAuthorResponse, error) {
 	allAuthors := server.db.GetAuthors()
 	var array []*authorGrpc.Author
 
@@ -55,14 +56,14 @@ func (server *routeServer) GetAuthors(_ context.Context, _ *emptypb.Empty) (*aut
 	}, nil
 }
 
-func (server *routeServer) UpdateAuthor(_ context.Context, author *authorGrpc.Author) (*authorGrpc.Response, error) {
+func (server *routes) UpdateAuthor(_ context.Context, author *authorGrpc.Author) (*authorGrpc.Response, error) {
 	err := server.db.UpdateAuthor(*author.Uuid, author.Name, author.PicUrl)
 	return &authorGrpc.Response{
 		Success: err == nil,
 	}, err
 }
 
-func (server *routeServer) DeleteAuthor(_ context.Context, request *authorGrpc.RequestId) (*authorGrpc.Response, error) {
+func (server *routes) DeleteAuthor(_ context.Context, request *authorGrpc.RequestId) (*authorGrpc.Response, error) {
 	err := server.db.DeleteAuthor(request.Uuid)
 	return &authorGrpc.Response{
 		Success: err == nil,

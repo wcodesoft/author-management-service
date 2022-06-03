@@ -12,13 +12,13 @@ import (
 	"testing"
 )
 
-func localDatabase() database.Database {
+func localDatabase() database.DbConnector {
 	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
 	if err != nil {
 		panic("Failed to connect to database.")
 	}
 	db.AutoMigrate(&database.Author{})
-	return database.Database{
+	return database.DbConnector{
 		Database: db,
 	}
 }
@@ -34,7 +34,7 @@ func TestCreateAuthorRPC(t *testing.T) {
 	ctx := context.Background()
 	defer db.CloseDatabase()
 
-	server := NewRouteServer(db)
+	server := NewRoutes(db)
 	name := "Author Name"
 	picUrl := "picture"
 
@@ -54,7 +54,7 @@ func TestCreateAuthorWithUUIDRPC(t *testing.T) {
 	ctx := context.Background()
 	defer db.CloseDatabase()
 
-	server := NewRouteServer(db)
+	server := NewRoutes(db)
 	newUUID := getNewUUID()
 	name := "Author Name"
 	picUrl := "picture"
@@ -85,7 +85,7 @@ func TestGetUserRPC(t *testing.T) {
 	ctx := context.Background()
 	defer db.CloseDatabase()
 
-	server := NewRouteServer(db)
+	server := NewRoutes(db)
 	newUUID := getNewUUID()
 	name := "Author Name"
 	picUrl := "picture"
@@ -114,7 +114,7 @@ func TestDeleteUserRPC(t *testing.T) {
 	ctx := context.Background()
 	defer db.CloseDatabase()
 
-	server := NewRouteServer(db)
+	server := NewRoutes(db)
 	newUUID := getNewUUID()
 	name := "Author Name"
 	picUrl := "picture"
@@ -141,7 +141,7 @@ func TestUpdateUserRPC(t *testing.T) {
 	ctx := context.Background()
 	defer db.CloseDatabase()
 
-	server := NewRouteServer(db)
+	server := NewRoutes(db)
 	newUUID := getNewUUID()
 	name := "Author Name"
 	picUrl := "picture"
@@ -181,7 +181,7 @@ func TestGetAuthorsRPC(t *testing.T) {
 	ctx := context.Background()
 	defer db.CloseDatabase()
 
-	server := NewRouteServer(db)
+	server := NewRoutes(db)
 	newUUID := getNewUUID()
 	name := "Author Name"
 	picUrl := "picture"
