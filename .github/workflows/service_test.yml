@@ -26,4 +26,9 @@ jobs:
 
       - name: Run tests
         working-directory: ./service
-        run: go test "./..." -v -coverprofile="coverage.out" -covermode=count -json > report.json`
+        run: go test ./... -v -coverprofile="coverage.out"
+
+      - name: Upload coverage to Codacy
+        working-directory:  ./service
+        run: bash <(curl -Ls https://coverage.codacy.com/get.sh) report --force-coverage-parser go -r coverage.out>
+

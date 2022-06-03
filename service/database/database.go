@@ -43,7 +43,7 @@ func (database *DbConnector) CloseDatabase() {
 }
 
 // AddAuthor Adds an author to the database.
-func (database *DbConnector) AddAuthor(id *string, name string, picUrl *string) (*uuid.UUID, error) {
+func (database *DbConnector) AddAuthor(id *string, name string, picURL *string) (*uuid.UUID, error) {
 	var _uuid uuid.UUID
 	if id != nil {
 		parsedUUID, err := uuid.Parse(*id)
@@ -58,7 +58,7 @@ func (database *DbConnector) AddAuthor(id *string, name string, picUrl *string) 
 		}
 		_uuid = newUUID
 	}
-	var author = Author{UUID: _uuid, Name: name, PicURL: picUrl}
+	var author = Author{UUID: _uuid, Name: name, PicURL: picURL}
 	result := database.Database.Create(&author)
 	return &author.UUID, result.Error
 }
@@ -81,12 +81,12 @@ func (database *DbConnector) GetAuthors() []Author {
 }
 
 // UpdateAuthor Updates the author entry with the new name and picUrl.
-func (database *DbConnector) UpdateAuthor(uuid string, name string, picUrl *string) error {
+func (database *DbConnector) UpdateAuthor(uuid string, name string, picURL *string) error {
 	var author, err = database.GetAuthor(uuid)
 	if err != nil || author == nil {
 		return err
 	}
-	err = database.Database.Model(author).Updates(Author{Name: name, PicURL: picUrl}).Error
+	err = database.Database.Model(author).Updates(Author{Name: name, PicURL: picURL}).Error
 	return err
 }
 
