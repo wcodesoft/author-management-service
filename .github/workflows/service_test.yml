@@ -28,7 +28,9 @@ jobs:
         run: go build -v
 
       - name: Run tests
-        run: go test ./... -v -coverprofile="coverage.out"
+        run: |
+          go test ./... -v -coverprofile="coverage.out" 
+          mv coverage.out ../
 
       - name: Run codacy-coverage-reporter
         uses: codacy/codacy-coverage-reporter-action@v1
