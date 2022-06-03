@@ -11,6 +11,10 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+defaults:
+  run:
+    working-directory: ./service
+
 jobs:
 
   test_service:
@@ -21,11 +25,9 @@ jobs:
       - uses: actions/setup-go@v2
 
       - name: Build
-        working-directory: ./service
         run: go build -v
 
       - name: Run tests
-        working-directory: ./service
         run: go test ./... -v -coverprofile="coverage.out"
 
       - name: Run codacy-coverage-reporter
