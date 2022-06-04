@@ -7,6 +7,7 @@ import (
 	"service/database"
 )
 
+// Routes Struct with implementation of the RPC endpoints.
 type Routes struct {
 	authorGrpc.UnimplementedAuthorManagementServer
 	db database.DbConnector
@@ -20,6 +21,7 @@ func NewRoutes(database database.DbConnector) *Routes {
 	return s
 }
 
+// CreateAuthor Creates an author in the database from the received data.
 func (server *Routes) CreateAuthor(_ context.Context, author *authorGrpc.Author) (*authorGrpc.Response, error) {
 	_, err := server.db.AddAuthor(author.Uuid, author.Name, author.PicUrl)
 	return &authorGrpc.Response{
@@ -27,6 +29,7 @@ func (server *Routes) CreateAuthor(_ context.Context, author *authorGrpc.Author)
 	}, err
 }
 
+// GetAuthor Gets an Author from the database and return to the user.
 func (server *Routes) GetAuthor(_ context.Context, requestID *authorGrpc.RequestId) (*authorGrpc.Author, error) {
 	author, err := server.db.GetAuthor(requestID.GetUuid())
 	id := author.UUID.String()
@@ -37,6 +40,7 @@ func (server *Routes) GetAuthor(_ context.Context, requestID *authorGrpc.Request
 	}, err
 }
 
+// GetAuthors Retrieve all authors stored on the database.
 func (server *Routes) GetAuthors(_ context.Context, _ *emptypb.Empty) (*authorGrpc.GetAuthorResponse, error) {
 	allAuthors := server.db.GetAuthors()
 	var array []*authorGrpc.Author
@@ -56,6 +60,7 @@ func (server *Routes) GetAuthors(_ context.Context, _ *emptypb.Empty) (*authorGr
 	}, nil
 }
 
+// UpdateAuthor Update author entry with the new data.
 func (server *Routes) UpdateAuthor(_ context.Context, author *authorGrpc.Author) (*authorGrpc.Response, error) {
 	err := server.db.UpdateAuthor(*author.Uuid, author.Name, author.PicUrl)
 	return &authorGrpc.Response{
@@ -63,6 +68,7 @@ func (server *Routes) UpdateAuthor(_ context.Context, author *authorGrpc.Author)
 	}, err
 }
 
+// DeleteAuthor Delete an author entry from the database.
 func (server *Routes) DeleteAuthor(_ context.Context, request *authorGrpc.RequestId) (*authorGrpc.Response, error) {
 	err := server.db.DeleteAuthor(request.Uuid)
 	return &authorGrpc.Response{
