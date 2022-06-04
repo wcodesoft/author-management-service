@@ -1,5 +1,8 @@
 # Author Management Service
 
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/1f7bd19322da40fbb15afd12f154ce14)](https://www.codacy.com/gh/wcodesoft/author-management-service/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=wcodesoft/author-management-service&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Coverage/1f7bd19322da40fbb15afd12f154ce14)](https://www.codacy.com/gh/wcodesoft/author-management-service/dashboard?utm_source=github.com&utm_medium=referral&utm_content=wcodesoft/author-management-service&utm_campaign=Badge_Coverage)
+
 Author management reusable microservice used on all Mosha projects. This component
 can be split in two modules:
 
