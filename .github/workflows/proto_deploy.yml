@@ -102,8 +102,7 @@ jobs:
       #  Publish Kotlin package to Github Registry
       #----------------------------------------------
       - name: Publish package
-        working-directory: ./proto
-        run: proto_builder publish-kotlin -f .
+        run: proto_builder publish-kotlin -f proto
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NEW_VERSION: ${{ steps.get_version.outputs.VERSION }}
