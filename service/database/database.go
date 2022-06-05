@@ -2,7 +2,6 @@ package database
 
 import (
 	"github.com/google/uuid"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
@@ -19,10 +18,10 @@ type Author struct {
 	PicURL *string
 }
 
-// NewDatabase Creates a new in memory DbConnector and automatically migrates the
+// NewConnection Creates a new in memory DbConnector and automatically migrates the
 // Author model.
-func NewDatabase() DbConnector {
-	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
+func NewConnection(connector gorm.Dialector) DbConnector {
+	db, err := gorm.Open(connector, &gorm.Config{})
 	if err != nil {
 		panic("Failed to connect to database.")
 	}
@@ -36,7 +35,7 @@ func NewDatabase() DbConnector {
 }
 
 // CloseDatabase Closes that database that was open when creating a new database using the
-// NewDatabase method.
+// NewConnection method.
 func (database *DbConnector) CloseDatabase() {
 	db, _ := database.Database.DB()
 	defer db.Close()

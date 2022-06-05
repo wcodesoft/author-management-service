@@ -1,4 +1,4 @@
-package service
+package main
 
 import (
 	"flag"
@@ -7,9 +7,11 @@ import (
 	"github.com/rs/cors"
 	authorManagement "github.com/wcodesoft/author-management-service/grpc/go/author-management.proto"
 	"google.golang.org/grpc"
+	"gorm.io/driver/postgres"
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"service/database"
 	"service/routes"
 )
@@ -31,7 +33,12 @@ func main() {
 
 	gRPCServer := grpc.NewServer()
 
-	db := database.NewDatabase()
+	dbConnectorString, ok := os.LookupEnv("POSTGRES_CONNECTOR_STRING")
+	if !ok {
+		dbConnectorString = "postgres://postgres:postgrespw@localhost:55000"
+	}
+	postgresDialector := postgres.Open(dbConnectorString)
+	db := database.NewConnection(postgresDialector)
 	authorManagement.RegisterAuthorManagementServer(gRPCServer, routes.NewRoutes(db))
 
 	go func() {
@@ -55,10 +62,13 @@ func main() {
 		Handler: cors.AllowAll().Handler(http.HandlerFunc(handler)),
 	}
 
-	log.Printf("Starting gRPC Web server. http port :%d\n", *webPort)
+	log.Printf("Starting gRPC Web server. http port %d\n", *webPort)
 
 	if err := httpServer.ListenAndServe(); err != nil {
 		log.Fatalf("Failed starting http server: %v", err)
 
 	}
+
+	log.Printf("gRPC server initialized at port %d\n", *port)
+	log.Printf("gRPC Web server started at http port %d\n", *webPort)
 }

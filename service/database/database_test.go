@@ -3,18 +3,21 @@ package database
 import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"gorm.io/driver/sqlite"
 	"testing"
 )
 
 func TestAddAuthorNotPassingUUID(t *testing.T) {
-	db := NewDatabase()
+	sqliteDialector := sqlite.Open("file::memory:?cache=shared")
+	db := NewConnection(sqliteDialector)
 	defer db.CloseDatabase()
 	_, err := db.AddAuthor(nil, "John Doe", nil)
 	assert.NoError(t, err, "Fail when adding user.")
 }
 
 func TestAddAuthorPassingUUID(t *testing.T) {
-	db := NewDatabase()
+	sqliteDialector := sqlite.Open("file::memory:?cache=shared")
+	db := NewConnection(sqliteDialector)
 	defer db.CloseDatabase()
 	newUUID, _ := uuid.NewUUID()
 	newUUIDString := newUUID.String()
@@ -24,7 +27,8 @@ func TestAddAuthorPassingUUID(t *testing.T) {
 }
 
 func TestAddAuthorPassingInvalidUUID(t *testing.T) {
-	db := NewDatabase()
+	sqliteDialector := sqlite.Open("file::memory:?cache=shared")
+	db := NewConnection(sqliteDialector)
 	defer db.CloseDatabase()
 	newUUID := "NotValidUUID"
 	id, err := db.AddAuthor(&newUUID, "John Doe", nil)
@@ -33,7 +37,8 @@ func TestAddAuthorPassingInvalidUUID(t *testing.T) {
 }
 
 func TestGetAuthor(t *testing.T) {
-	db := NewDatabase()
+	sqliteDialector := sqlite.Open("file::memory:?cache=shared")
+	db := NewConnection(sqliteDialector)
 	defer db.CloseDatabase()
 	picUrl := "johndoe"
 	ans, err := db.AddAuthor(nil, "John Doe", &picUrl)
@@ -45,7 +50,8 @@ func TestGetAuthor(t *testing.T) {
 }
 
 func TestGetAllAuthors(t *testing.T) {
-	db := NewDatabase()
+	sqliteDialector := sqlite.Open("file::memory:?cache=shared")
+	db := NewConnection(sqliteDialector)
 	defer db.CloseDatabase()
 	db.AddAuthor(nil, "Author1", nil)
 	authors := db.GetAuthors()
@@ -56,7 +62,8 @@ func TestGetAllAuthors(t *testing.T) {
 }
 
 func TestUpdateAuthor(t *testing.T) {
-	db := NewDatabase()
+	sqliteDialector := sqlite.Open("file::memory:?cache=shared")
+	db := NewConnection(sqliteDialector)
 	defer db.CloseDatabase()
 	authorId, err := db.AddAuthor(nil, "Author1", nil)
 	assert.NoError(t, err, "Fail to add an author.")
@@ -70,14 +77,16 @@ func TestUpdateAuthor(t *testing.T) {
 }
 
 func TestUpdateAuthorNonExistentAuthor(t *testing.T) {
-	db := NewDatabase()
+	sqliteDialector := sqlite.Open("file::memory:?cache=shared")
+	db := NewConnection(sqliteDialector)
 	defer db.CloseDatabase()
 	err := db.UpdateAuthor("NotExistentUUID", "", nil)
 	assert.Error(t, err, "Able to update author.")
 }
 
 func TestDeleteAuthor(t *testing.T) {
-	db := NewDatabase()
+	sqliteDialector := sqlite.Open("file::memory:?cache=shared")
+	db := NewConnection(sqliteDialector)
 	defer db.CloseDatabase()
 	authorId, err := db.AddAuthor(nil, "Author1", nil)
 	assert.NoError(t, err, "Fail to add an author.")
@@ -89,7 +98,8 @@ func TestDeleteAuthor(t *testing.T) {
 }
 
 func TestDeleteAuthorNonExistentAuthor(t *testing.T) {
-	db := NewDatabase()
+	sqliteDialector := sqlite.Open("file::memory:?cache=shared")
+	db := NewConnection(sqliteDialector)
 	defer db.CloseDatabase()
 	err := db.DeleteAuthor("NonExistentUUID")
 	assert.Error(t, err, "Able to delete entry.")

@@ -18,3 +18,20 @@ To add the `Go` library to your service run the command:
 ```bash
 go get -u github.com/wcodesoft/author-management-service/grpc/go/author-management.proto
 ```
+
+## Run Service
+
+On the `service` folder execute the following command to run the service:
+
+```bash
+go run service
+```
+
+## Test service
+
+Tests are already implemented for the service, to run the tests and get the coverage report run the following command
+on the `service` folder:
+
+```bash
+go test ./... -v coverageprofile="coverage.out" 
+```

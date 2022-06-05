@@ -7,20 +7,13 @@ import (
 	authorManagement "github.com/wcodesoft/author-management-service/grpc/go/author-management.proto"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
 	"service/database"
 	"testing"
 )
 
 func localDatabase() database.DbConnector {
-	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
-	if err != nil {
-		panic("Failed to connect to database.")
-	}
-	db.AutoMigrate(&database.Author{})
-	return database.DbConnector{
-		Database: db,
-	}
+	sqliteDialector := sqlite.Open("file::memory:?cache=shared")
+	return database.NewConnection(sqliteDialector)
 }
 
 func getNewUUID() string {
