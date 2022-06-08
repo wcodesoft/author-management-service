@@ -71,12 +71,13 @@ services:
       - internal
 
   author_service:
-    image: author-service
+    image: ghcr.io/wcodesoft/author-management-service:latest
     environment:
       - DB_CONNECTOR=postgres://postgres:postgrespw@postgres:5432
     ports:
       - "9000:9000"
       - "9001:9001"
+    restart: on-failure
     networks:
       - internal
     depends_on:
