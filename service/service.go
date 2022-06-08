@@ -3,17 +3,18 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/improbable-eng/grpc-web/go/grpcweb"
-	"github.com/rs/cors"
-	authorManagement "github.com/wcodesoft/author-management-service/grpc/go/author-management.proto"
-	"google.golang.org/grpc"
-	"gorm.io/driver/postgres"
 	"log"
 	"net"
 	"net/http"
 	"os"
 	"service/database"
 	"service/routes"
+
+	"github.com/improbable-eng/grpc-web/go/grpcweb"
+	"github.com/rs/cors"
+	authorManagement "github.com/wcodesoft/author-management-service/grpc/go/author-management.proto"
+	"google.golang.org/grpc"
+	"gorm.io/driver/postgres"
 )
 
 var (
@@ -33,10 +34,11 @@ func main() {
 
 	gRPCServer := grpc.NewServer()
 
-	dbConnectorString, ok := os.LookupEnv("POSTGRES_CONNECTOR_STRING")
+	dbConnectorString, ok := os.LookupEnv("DB_CONNECTOR")
 	if !ok {
 		dbConnectorString = "postgres://postgres:postgrespw@localhost:55000"
 	}
+	log.Printf("Trying to connect to database at: %s\n", dbConnectorString)
 	postgresDialector := postgres.Open(dbConnectorString)
 	db := database.NewConnection(postgresDialector)
 	authorManagement.RegisterAuthorManagementServer(gRPCServer, routes.NewRoutes(db))

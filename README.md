@@ -35,3 +35,50 @@ on the `service` folder:
 ```bash
 go test ./... -v coverageprofile="coverage.out" 
 ```
+
+## Build Docker image
+
+The service is shared using a Docker image. Enter the `service` folder and execute the command:
+
+```bash
+docker build . -t author-service
+```
+
+## Run with Postgres
+
+It's highly suggested that the service is run using docker-compose. Follow the template to have a simple setup
+for the `docker-compose.yml`:
+
+```yaml
+version: '3.8'
+
+volumes:
+  data:
+
+networks:
+  internal:
+
+services:
+  postgres:
+    image: postgres:latest
+    environment:
+      - POSTGRES_PASSWORD=postgrespw
+    ports:
+      - "5432:5432"
+    volumes:
+      - data:/var/lib/postgresql
+    networks:
+      - internal
+
+  author_service:
+    image: author-service
+    environment:
+      - DB_CONNECTOR=postgres://postgres:postgrespw@postgres:5432
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    networks:
+      - internal
+    depends_on:
+      - postgres
+```
