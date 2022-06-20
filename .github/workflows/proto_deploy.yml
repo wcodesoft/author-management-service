@@ -13,6 +13,7 @@ on:
   workflow_dispatch:
 
 jobs:
+
   publish_typescript:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/proto')
@@ -77,6 +78,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      id-token: write
     steps:
       - name: Get the version
         id: get_version
