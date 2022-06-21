@@ -48,7 +48,7 @@ jobs:
       #----------------------------------------------
       - name: Install proto_builder
         working-directory: ./proto
-        run: pip install -i https://test.pypi.org/simple/ proto-builder==1.0.0a7
+        run: pip install -i https://test.pypi.org/simple/ proto-builder==1.0.0a8
       #----------------------------------------------
       #       Setup proto_builder
       #----------------------------------------------
@@ -104,7 +104,7 @@ jobs:
       #----------------------------------------------
       - name: Install proto_builder
         working-directory: ./proto
-        run: pip install -i https://test.pypi.org/simple/ proto-builder==1.0.0a7
+        run: pip install -i https://test.pypi.org/simple/ proto-builder==1.0.0a8
       #----------------------------------------------
       #  Publish Kotlin package to Github Registry
       #----------------------------------------------
