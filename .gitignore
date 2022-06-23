@@ -16,5 +16,5 @@
 
 .idea
 
-grpc/kt/
-grpc/ts/
+protos/kt/
+protos/ts/
