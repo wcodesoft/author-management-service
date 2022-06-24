@@ -67,7 +67,7 @@ jobs:
       # Publish Typescript library on Github Registry
       #----------------------------------------------
       - name: Publish typescript
-        working-directory: ./grpc/ts/author-management-proto
+        working-directory: ./protos/ts/author-management-proto
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
