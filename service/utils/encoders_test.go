@@ -23,9 +23,9 @@ func TestEncodeResponseToByte(t *testing.T) {
 }
 
 func TestEncodeAuthorToString(t *testing.T) {
-	newUuid := uuid.NewString()
+	newUUID := uuid.NewString()
 	author := &authorManagementProto.Author{
-		Uuid: &newUuid,
+		Uuid: &newUUID,
 		Name: "Walter José",
 	}
 	encoded, _ := proto.Marshal(author)
@@ -38,9 +38,9 @@ func TestEncodeAuthorsListToString(t *testing.T) {
 	var authors []*authorManagementProto.Author
 	expectedLen := 3
 	for i := 0; i < expectedLen; i++ {
-		newUuid := uuid.NewString()
+		newUUID := uuid.NewString()
 		authors = append(authors, &authorManagementProto.Author{
-			Uuid: &newUuid,
+			Uuid: &newUUID,
 			Name: "Test",
 		})
 	}

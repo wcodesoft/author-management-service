@@ -4,9 +4,9 @@ import authorManagementProto "github.com/wcodesoft/author-management-service/pro
 
 // AuthorFromGrpc Transforms an Author proto into an Author object.
 func AuthorFromGrpc(author *authorManagementProto.Author) Author {
-	parsedUuid := uuidParseOrCreate(*author.Uuid)
+	parsedUUID := uuidParseOrCreate(*author.Uuid)
 	return Author{
-		ID:     &parsedUuid,
+		ID:     &parsedUUID,
 		Name:   author.Name,
 		PicURL: author.PicUrl,
 	}

@@ -17,9 +17,9 @@ func TestRouteManager_CreateEvent(t *testing.T) {
 	sqliteDialector := sqlite.Open("file::memory:?cache=shared")
 	db := database.NewConnection(sqliteDialector)
 	defer db.CloseDatabase()
-	newUuid := uuid.NewString()
+	newUUID := uuid.NewString()
 	author := authorManagementProto.Author{
-		Uuid:   &newUuid,
+		Uuid:   &newUUID,
 		Name:   "John Doe",
 		PicUrl: nil,
 	}
@@ -32,16 +32,16 @@ func TestRouteManager_CreateEvent(t *testing.T) {
 	router := NewRouteManager(db)
 	result, err := router.RouteEvent(&event)
 	assert.NoError(t, err)
-	assert.Equal(t, newUuid, result[0])
+	assert.Equal(t, newUUID, result[0])
 }
 
 func TestRouteManager_UpdateEvent(t *testing.T) {
 	sqliteDialector := sqlite.Open("file::memory:?cache=shared")
 	db := database.NewConnection(sqliteDialector)
 	defer db.CloseDatabase()
-	newUuid := uuid.NewString()
+	newUUID := uuid.NewString()
 	author := authorManagementProto.Author{
-		Uuid:   &newUuid,
+		Uuid:   &newUUID,
 		Name:   "John Doe",
 		PicUrl: nil,
 	}
@@ -54,10 +54,10 @@ func TestRouteManager_UpdateEvent(t *testing.T) {
 	router := NewRouteManager(db)
 	result, err := router.RouteEvent(&event)
 	assert.NoError(t, err)
-	assert.Equal(t, newUuid, result[0])
+	assert.Equal(t, newUUID, result[0])
 
 	newAuthor := authorManagementProto.Author{
-		Uuid:   &newUuid,
+		Uuid:   &newUUID,
 		Name:   "John Doe",
 		PicUrl: nil,
 	}
@@ -76,9 +76,9 @@ func TestRouteManager_ReadEvent(t *testing.T) {
 	sqliteDialector := sqlite.Open("file::memory:?cache=shared")
 	db := database.NewConnection(sqliteDialector)
 	defer db.CloseDatabase()
-	newUuid := uuid.NewString()
+	newUUID := uuid.NewString()
 	author := authorManagementProto.Author{
-		Uuid:   &newUuid,
+		Uuid:   &newUUID,
 		Name:   "John Doe",
 		PicUrl: nil,
 	}
@@ -91,10 +91,10 @@ func TestRouteManager_ReadEvent(t *testing.T) {
 	router := NewRouteManager(db)
 	result, err := router.RouteEvent(&event)
 	assert.NoError(t, err)
-	assert.Equal(t, newUuid, result[0])
+	assert.Equal(t, newUUID, result[0])
 
 	query := eventProto.Query{
-		Uuid:       &newUuid,
+		Uuid:       &newUUID,
 		AllEntries: false,
 	}
 	byteQuery, _ := proto.Marshal(&query)
@@ -116,9 +116,9 @@ func TestRouteManager_ReadAllEvent(t *testing.T) {
 	sqliteDialector := sqlite.Open("file::memory:?cache=shared")
 	db := database.NewConnection(sqliteDialector)
 	defer db.CloseDatabase()
-	newUuid := uuid.NewString()
+	newUUID := uuid.NewString()
 	author := authorManagementProto.Author{
-		Uuid:   &newUuid,
+		Uuid:   &newUUID,
 		Name:   "John Doe",
 		PicUrl: nil,
 	}
@@ -131,7 +131,7 @@ func TestRouteManager_ReadAllEvent(t *testing.T) {
 	router := NewRouteManager(db)
 	result, err := router.RouteEvent(&event)
 	assert.NoError(t, err)
-	assert.Equal(t, newUuid, result[0])
+	assert.Equal(t, newUUID, result[0])
 
 	query := eventProto.Query{
 		AllEntries: true,
@@ -156,9 +156,9 @@ func TestRouteManager_DeleteEvent(t *testing.T) {
 	sqliteDialector := sqlite.Open("file::memory:?cache=shared")
 	db := database.NewConnection(sqliteDialector)
 	defer db.CloseDatabase()
-	newUuid := uuid.NewString()
+	newUUID := uuid.NewString()
 	author := authorManagementProto.Author{
-		Uuid:   &newUuid,
+		Uuid:   &newUUID,
 		Name:   "John Doe",
 		PicUrl: nil,
 	}
@@ -171,10 +171,10 @@ func TestRouteManager_DeleteEvent(t *testing.T) {
 	router := NewRouteManager(db)
 	result, err := router.RouteEvent(&event)
 	assert.NoError(t, err)
-	assert.Equal(t, newUuid, result[0])
+	assert.Equal(t, newUUID, result[0])
 
 	query := eventProto.Query{
-		Uuid:       &newUuid,
+		Uuid:       &newUUID,
 		AllEntries: false,
 	}
 	byteQuery, _ := proto.Marshal(&query)
@@ -192,9 +192,9 @@ func TestRouteManager_DeleteEventWithoutUUID(t *testing.T) {
 	sqliteDialector := sqlite.Open("file::memory:?cache=shared")
 	db := database.NewConnection(sqliteDialector)
 	defer db.CloseDatabase()
-	newUuid := uuid.NewString()
+	newUUID := uuid.NewString()
 	author := authorManagementProto.Author{
-		Uuid:   &newUuid,
+		Uuid:   &newUUID,
 		Name:   "John Doe",
 		PicUrl: nil,
 	}
@@ -207,7 +207,7 @@ func TestRouteManager_DeleteEventWithoutUUID(t *testing.T) {
 	router := NewRouteManager(db)
 	result, err := router.RouteEvent(&event)
 	assert.NoError(t, err)
-	assert.Equal(t, newUuid, result[0])
+	assert.Equal(t, newUUID, result[0])
 
 	query := eventProto.Query{
 		AllEntries: false,

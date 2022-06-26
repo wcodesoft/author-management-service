@@ -8,28 +8,28 @@ import (
 )
 
 func TestAuthorFromGrpc(t *testing.T) {
-	expectedUuid := uuid.New().String()
+	expectedUUID := uuid.New().String()
 	expectedName := "Test"
 	expectedPic := "TestPic"
 	authorGrpc := &authorManagementProto.Author{
-		Uuid:   &expectedUuid,
+		Uuid:   &expectedUUID,
 		Name:   expectedName,
 		PicUrl: &expectedPic,
 	}
 	parsedAuthor := AuthorFromGrpc(authorGrpc)
-	picUrl := *parsedAuthor.PicURL
-	assert.Equal(t, expectedUuid, parsedAuthor.ID.String())
+	picURL := *parsedAuthor.PicURL
+	assert.Equal(t, expectedUUID, parsedAuthor.ID.String())
 	assert.Equal(t, expectedName, parsedAuthor.Name)
-	assert.Equal(t, expectedPic, picUrl)
+	assert.Equal(t, expectedPic, picURL)
 }
 
 func TestAuthorListToGrpcList(t *testing.T) {
 	var authorList []Author
 	expectedLen := 3
 	for i := 0; i < expectedLen; i++ {
-		newUuid := uuid.New()
+		newUUID := uuid.New()
 		authorList = append(authorList, Author{
-			ID:     &newUuid,
+			ID:     &newUUID,
 			Name:   "Test",
 			PicURL: nil,
 		})

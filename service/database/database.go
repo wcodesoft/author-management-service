@@ -55,8 +55,8 @@ func (database *DbConnector) CloseDatabase() {
 func (database *DbConnector) AddAuthor(author Author) (*uuid.UUID, error) {
 	authorToAdd := author
 	if author.ID == nil {
-		newUuid := uuid.New()
-		author.ID = &newUuid
+		newUUID := uuid.New()
+		author.ID = &newUUID
 		authorToAdd = author
 	}
 	result := database.Database.Create(&authorToAdd)
