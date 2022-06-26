@@ -7,12 +7,14 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+// DecodeEvent Receives an array of bytes and transform to proto Event.
 func DecodeEvent(body []byte) *eventProto.Event {
 	event := &eventProto.Event{}
 	proto.Unmarshal(body, event)
 	return event
 }
 
+// DecodeQuery Receives a base64 serialized string and parse it to a proto Query.
 func DecodeQuery(message string) *eventProto.Query {
 	decoded, _ := base64.StdEncoding.DecodeString(message)
 	query := &eventProto.Query{}
@@ -20,6 +22,7 @@ func DecodeQuery(message string) *eventProto.Query {
 	return query
 }
 
+// DecodeAuthor Receives a base64 serialized string and parse it to a proto Author.
 func DecodeAuthor(message string) *authorManagementProto.Author {
 	decoded, _ := base64.StdEncoding.DecodeString(message)
 	author := &authorManagementProto.Author{}
