@@ -2,75 +2,106 @@ package main
 
 import (
 	"flag"
-	"fmt"
+	"github.com/streadway/amqp"
+	"gorm.io/driver/postgres"
 	"log"
-	"net"
-	"net/http"
 	"os"
 	"service/database"
-	"service/routes"
-
-	"github.com/improbable-eng/grpc-web/go/grpcweb"
-	"github.com/rs/cors"
-	authorManagement "github.com/wcodesoft/author-management-service/grpc/go/author-management.proto"
-	"google.golang.org/grpc"
-	"gorm.io/driver/postgres"
+	"service/router"
+	"service/utils"
 )
 
 var (
-	port    = flag.Int("port", 9000, "Port on which gRPC server should listen TCP conn.")
-	webPort = flag.Int("webPort", 9001, "Port on which web gRPC server should listen TCP conn.")
+	queueName = flag.String("queue_name", "authorQueue", "Name of the queue that this service will connect to.")
 )
 
-func main() {
-	flag.Parse()
-
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
+func failOnError(err error, msg string) {
 	if err != nil {
-		log.Fatalf("Failed to listen: %v", err)
+		log.Fatalf("%s: %s", msg, err)
 	}
+}
 
-	log.Printf("Initializing gRPC server on port %d", *port)
+func connectToChannel(connection *amqp.Connection) *amqp.Channel {
+	ch, err := connection.Channel()
+	failOnError(err, "Failed to open a channel")
+	return ch
+}
 
-	gRPCServer := grpc.NewServer()
+func openConnection() *amqp.Connection {
+	address, ok := os.LookupEnv("RABBITMQ_ADDRESS")
+	if !ok {
+		address = "amqp://guest:guest@localhost:55001/"
+	}
+	log.Printf("Connecting to RabbitMQ at: %s", address)
+	conn, err := amqp.Dial(address)
+	failOnError(err, "Failed to connect to RabbitMQ")
+	return conn
+}
+
+func createQueue(channel *amqp.Channel) amqp.Queue {
+	q, err := channel.QueueDeclare(
+		*queueName, // name
+		true,       // durable
+		false,      // delete when unused
+		false,      // exclusive
+		false,      // no-wait
+		nil,        // arguments
+	)
+	failOnError(err, "Failed to declare a queue")
+	return q
+}
+
+func main() {
+	conn := openConnection()
+	channel := connectToChannel(conn)
+	queue := createQueue(channel)
+
+	messages, err := channel.Consume(
+		queue.Name, // queue
+		"",         // consumer
+		false,      // auto-ack
+		false,      // exclusive
+		false,      // no-local
+		false,      // no-wait
+		nil,        // args
+	)
+	failOnError(err, "Failed to register a consumer")
 
 	dbConnectorString, ok := os.LookupEnv("DB_CONNECTOR")
 	if !ok {
-		dbConnectorString = "postgres://postgres:postgrespw@localhost:55000"
+		dbConnectorString = "postgres://postgres:postgrespw@localhost:55002"
 	}
-	log.Printf("Trying to connect to database at: %s\n", dbConnectorString)
+	log.Printf("Connecting to database at: %s\n", dbConnectorString)
 	postgresDialector := postgres.Open(dbConnectorString)
-	db := database.NewConnection(postgresDialector)
-	authorManagement.RegisterAuthorManagementServer(gRPCServer, routes.NewRoutes(db))
+	connector := database.NewConnection(postgresDialector)
+	routeManager := router.NewRouteManager(connector)
+
+	forever := make(chan bool)
 
 	go func() {
-		if err := gRPCServer.Serve(lis); err != nil {
-			log.Fatalf("Failed to serve: %v", err)
+		for message := range messages {
+			body := message.Body
+			event := utils.DecodeEvent(body)
+			log.Printf("Received a message: %s", event.String())
+			response := utils.BuildResponse(routeManager.RouteEvent(event))
+
+			err := channel.Publish(
+				"", message.ReplyTo,
+				false, // mandatory
+				false, // immediate
+				amqp.Publishing{
+					ContentType:   "text/plain",
+					CorrelationId: message.CorrelationId,
+					Body:          utils.EncodeResponseToByte(response),
+				})
+			failOnError(err, "Failed to publish a message")
+			message.Ack(false)
 		}
 	}()
 
-	// Now wrapping to server for web clients using Typescript gRPC
-	wrappedServer := grpcweb.WrapServer(gRPCServer)
-	handler := func(resp http.ResponseWriter, req *http.Request) {
-		if wrappedServer.IsGrpcWebRequest(req) {
-			wrappedServer.ServeHTTP(resp, req)
-			return
-		}
-		http.DefaultServeMux.ServeHTTP(resp, req)
-	}
+	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
+	<-forever
 
-	httpServer := http.Server{
-		Addr:    fmt.Sprintf(":%d", *webPort),
-		Handler: cors.AllowAll().Handler(http.HandlerFunc(handler)),
-	}
-
-	log.Printf("Starting gRPC Web server. http port %d\n", *webPort)
-
-	if err := httpServer.ListenAndServe(); err != nil {
-		log.Fatalf("Failed starting http server: %v", err)
-
-	}
-
-	log.Printf("gRPC server initialized at port %d\n", *port)
-	log.Printf("gRPC Web server started at http port %d\n", *webPort)
+	defer channel.Close()
+	defer conn.Close()
 }

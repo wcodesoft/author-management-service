@@ -1,6 +1,7 @@
 package database
 
 import (
+	"errors"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -12,8 +13,7 @@ type DbConnector struct {
 
 // Author type that will be stored in the DbConnector.
 type Author struct {
-	gorm.Model
-	UUID   uuid.UUID `gorm:"primaryKey,default:uuid_generate_v4()"`
+	ID     *uuid.UUID `gorm:"primaryKey,unique,default:uuid_generate_v4()"`
 	Name   string
 	PicURL *string
 }
@@ -34,6 +34,16 @@ func NewConnection(connector gorm.Dialector) DbConnector {
 	}
 }
 
+// uuidParseOrCreate Parse the string ID into a UUID or creates a new one when the passed value
+// is invalid.
+func uuidParseOrCreate(id string) uuid.UUID {
+	value, err := uuid.Parse(id)
+	if err == nil {
+		return value
+	}
+	return uuid.New()
+}
+
 // CloseDatabase Closes that database that was open when creating a new database using the
 // NewConnection method.
 func (database *DbConnector) CloseDatabase() {
@@ -42,30 +52,21 @@ func (database *DbConnector) CloseDatabase() {
 }
 
 // AddAuthor Adds an author to the database.
-func (database *DbConnector) AddAuthor(id *string, name string, picURL *string) (*uuid.UUID, error) {
-	var _uuid uuid.UUID
-	if id != nil {
-		parsedUUID, err := uuid.Parse(*id)
-		if err != nil {
-			return nil, err
-		}
-		_uuid = parsedUUID
-	} else {
-		newUUID, err := uuid.NewUUID()
-		if err != nil {
-			return nil, err
-		}
-		_uuid = newUUID
+func (database *DbConnector) AddAuthor(author Author) (*uuid.UUID, error) {
+	authorToAdd := author
+	if author.ID == nil {
+		newUuid := uuid.New()
+		author.ID = &newUuid
+		authorToAdd = author
 	}
-	var author = Author{UUID: _uuid, Name: name, PicURL: picURL}
-	result := database.Database.Create(&author)
-	return &author.UUID, result.Error
+	result := database.Database.Create(&authorToAdd)
+	return author.ID, result.Error
 }
 
 // GetAuthor Queries an author on the database using the uuid and return it to the caller.
 func (database *DbConnector) GetAuthor(uuid string) (*Author, error) {
 	var author *Author
-	err := database.Database.First(&author, "uuid = ?", uuid).Error
+	err := database.Database.First(&author, "id = ?", uuid).Error
 	if err != nil {
 		return nil, err
 	}
@@ -80,12 +81,15 @@ func (database *DbConnector) GetAuthors() []Author {
 }
 
 // UpdateAuthor Updates the author entry with the new name and picUrl.
-func (database *DbConnector) UpdateAuthor(uuid string, name string, picURL *string) error {
-	var author, err = database.GetAuthor(uuid)
-	if err != nil || author == nil {
+func (database *DbConnector) UpdateAuthor(author Author) error {
+	if author.ID == nil {
+		return errors.New("can´t update author without proper id")
+	}
+	var found, err = database.GetAuthor(author.ID.String())
+	if err != nil || found == nil {
 		return err
 	}
-	err = database.Database.Model(author).Updates(Author{Name: name, PicURL: picURL}).Error
+	err = database.Database.Model(author).Updates(author).Error
 	return err
 }
 

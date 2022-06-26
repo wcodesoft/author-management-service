@@ -11,7 +11,12 @@ func TestAddAuthorNotPassingUUID(t *testing.T) {
 	sqliteDialector := sqlite.Open("file::memory:?cache=shared")
 	db := NewConnection(sqliteDialector)
 	defer db.CloseDatabase()
-	_, err := db.AddAuthor(nil, "John Doe", nil)
+	author := Author{
+		ID:     nil,
+		Name:   "John Doe",
+		PicURL: nil,
+	}
+	_, err := db.AddAuthor(author)
 	assert.NoError(t, err, "Fail when adding user.")
 }
 
@@ -19,21 +24,38 @@ func TestAddAuthorPassingUUID(t *testing.T) {
 	sqliteDialector := sqlite.Open("file::memory:?cache=shared")
 	db := NewConnection(sqliteDialector)
 	defer db.CloseDatabase()
-	newUUID, _ := uuid.NewUUID()
-	newUUIDString := newUUID.String()
-	id, err := db.AddAuthor(&newUUIDString, "John Doe", nil)
+	newUuid := uuid.New()
+	author := Author{
+		ID:     &newUuid,
+		Name:   "John Doe",
+		PicURL: nil,
+	}
+	newUUIDString := newUuid.String()
+	id, err := db.AddAuthor(author)
 	assert.NoError(t, err, "Fail when adding user.")
 	assert.Equal(t, newUUIDString, id.String())
 }
 
-func TestAddAuthorPassingInvalidUUID(t *testing.T) {
+func TestAddAlreadyExistingAuthor(t *testing.T) {
 	sqliteDialector := sqlite.Open("file::memory:?cache=shared")
 	db := NewConnection(sqliteDialector)
 	defer db.CloseDatabase()
-	newUUID := "NotValidUUID"
-	id, err := db.AddAuthor(&newUUID, "John Doe", nil)
-	assert.Nil(t, id, "Adding with invalid UUID")
-	assert.Errorf(t, err, "Adding with invalid UUID")
+	author := Author{
+		ID:     nil,
+		Name:   "John Doe",
+		PicURL: nil,
+	}
+	id, err := db.AddAuthor(author)
+	assert.NoError(t, err, "Fail when adding user.")
+	author2 := Author{
+		ID:     id,
+		Name:   "John Doe 2",
+		PicURL: nil,
+	}
+	_, err2 := db.AddAuthor(author2)
+	authors := db.GetAuthors()
+	assert.Error(t, err2, "Author added with same Uuid %s", authors)
+
 }
 
 func TestGetAuthor(t *testing.T) {
@@ -41,9 +63,15 @@ func TestGetAuthor(t *testing.T) {
 	db := NewConnection(sqliteDialector)
 	defer db.CloseDatabase()
 	picUrl := "johndoe"
-	ans, err := db.AddAuthor(nil, "John Doe", &picUrl)
+	newAuthor := Author{
+		ID:     nil,
+		Name:   "John Doe",
+		PicURL: &picUrl,
+	}
+	ans, err := db.AddAuthor(newAuthor)
 	assert.NoError(t, err, "Fail when adding user.")
-	author, errGet := db.GetAuthor(ans.String())
+	uuidString := ans.String()
+	author, errGet := db.GetAuthor(uuidString)
 	assert.NoError(t, errGet, "Fail when retrieving author")
 	assert.Equal(t, "John Doe", author.Name)
 	assert.Equal(t, "johndoe", *author.PicURL)
@@ -53,10 +81,20 @@ func TestGetAllAuthors(t *testing.T) {
 	sqliteDialector := sqlite.Open("file::memory:?cache=shared")
 	db := NewConnection(sqliteDialector)
 	defer db.CloseDatabase()
-	db.AddAuthor(nil, "Author1", nil)
+	author1 := Author{
+		ID:     nil,
+		Name:   "Author1",
+		PicURL: nil,
+	}
+	db.AddAuthor(author1)
 	authors := db.GetAuthors()
 	assert.Len(t, authors, 1, "Wrong number of authors, expected 1 got %d", len(authors))
-	db.AddAuthor(nil, "Author2", nil)
+	author2 := Author{
+		ID:     nil,
+		Name:   "Author1",
+		PicURL: nil,
+	}
+	db.AddAuthor(author2)
 	authors = db.GetAuthors()
 	assert.Len(t, authors, 2, "Wrong number of authors, expected 1 got %d", len(authors))
 }
@@ -65,10 +103,20 @@ func TestUpdateAuthor(t *testing.T) {
 	sqliteDialector := sqlite.Open("file::memory:?cache=shared")
 	db := NewConnection(sqliteDialector)
 	defer db.CloseDatabase()
-	authorId, err := db.AddAuthor(nil, "Author1", nil)
+	author1 := Author{
+		ID:     nil,
+		Name:   "Author1",
+		PicURL: nil,
+	}
+	authorId, err := db.AddAuthor(author1)
 	assert.NoError(t, err, "Fail to add an author.")
 	newPicUrl := "newPicUrl"
-	err = db.UpdateAuthor(authorId.String(), "Author1", &newPicUrl)
+	newAuthor1 := Author{
+		ID:     authorId,
+		Name:   "Author1",
+		PicURL: &newPicUrl,
+	}
+	err = db.UpdateAuthor(newAuthor1)
 	assert.NoError(t, err, "Fail to update author data.")
 	var author, errGet = db.GetAuthor(authorId.String())
 	assert.NoError(t, errGet, "Fail to get author")
@@ -76,11 +124,30 @@ func TestUpdateAuthor(t *testing.T) {
 	assert.Equal(t, *author.PicURL, "newPicUrl")
 }
 
+func TestUpdateAuthorWithNilUUID(t *testing.T) {
+	sqliteDialector := sqlite.Open("file::memory:?cache=shared")
+	db := NewConnection(sqliteDialector)
+	defer db.CloseDatabase()
+	author1 := Author{
+		ID:     nil,
+		Name:   "Author1",
+		PicURL: nil,
+	}
+	err := db.UpdateAuthor(author1)
+	assert.Error(t, err, "Able to update author.")
+}
+
 func TestUpdateAuthorNonExistentAuthor(t *testing.T) {
 	sqliteDialector := sqlite.Open("file::memory:?cache=shared")
 	db := NewConnection(sqliteDialector)
 	defer db.CloseDatabase()
-	err := db.UpdateAuthor("NotExistentUUID", "", nil)
+	newUUID := uuid.New()
+	author1 := Author{
+		ID:     &newUUID,
+		Name:   "Author1",
+		PicURL: nil,
+	}
+	err := db.UpdateAuthor(author1)
 	assert.Error(t, err, "Able to update author.")
 }
 
@@ -88,7 +155,12 @@ func TestDeleteAuthor(t *testing.T) {
 	sqliteDialector := sqlite.Open("file::memory:?cache=shared")
 	db := NewConnection(sqliteDialector)
 	defer db.CloseDatabase()
-	authorId, err := db.AddAuthor(nil, "Author1", nil)
+	author1 := Author{
+		ID:     nil,
+		Name:   "Author1",
+		PicURL: nil,
+	}
+	authorId, err := db.AddAuthor(author1)
 	assert.NoError(t, err, "Fail to add an author.")
 	err = db.DeleteAuthor(authorId.String())
 	assert.NoError(t, err, "Fail to delete author data.")
@@ -103,4 +175,15 @@ func TestDeleteAuthorNonExistentAuthor(t *testing.T) {
 	defer db.CloseDatabase()
 	err := db.DeleteAuthor("NonExistentUUID")
 	assert.Error(t, err, "Able to delete entry.")
+}
+
+func TestUUIDCorrectingParsing(t *testing.T) {
+	newUuid := uuid.New()
+	parsed := uuidParseOrCreate(newUuid.String())
+	assert.Equal(t, newUuid.String(), parsed.String())
+}
+
+func TestUUIDCreatingNewUuidFromInvalidEntry(t *testing.T) {
+	parsed := uuidParseOrCreate("Invalid")
+	assert.NotEqual(t, parsed.String(), "Invalid")
 }
