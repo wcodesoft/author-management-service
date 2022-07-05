@@ -20,6 +20,7 @@ func NewRouteManager(connector database.DbConnector) *RouteManager {
 	}
 }
 
+// RouteEvent Process a received event from the message broker.
 func (rm *RouteManager) RouteEvent(event *eventProto.Event) ([]string, error) {
 	switch event.Action {
 	case eventProto.Action_CREATE:
@@ -34,6 +35,7 @@ func (rm *RouteManager) RouteEvent(event *eventProto.Event) ([]string, error) {
 	return nil, errors.New("action not supported")
 }
 
+// createAuthor Creates an author from the information passed on the event.
 func (rm *RouteManager) createAuthor(event *eventProto.Event) ([]string, error) {
 	author := utils.DecodeAuthor(event.Message)
 	uuid, err := rm.connector.AddAuthor(database.AuthorFromGrpc(author))
@@ -41,12 +43,14 @@ func (rm *RouteManager) createAuthor(event *eventProto.Event) ([]string, error) 
 	return []string{parsedUuid}, err
 }
 
+// updateAuthor Updates an author with the new data passed on the event.
 func (rm *RouteManager) updateAuthor(event *eventProto.Event) ([]string, error) {
 	author := utils.DecodeAuthor(event.Message)
 	err := rm.connector.UpdateAuthor(database.AuthorFromGrpc(author))
 	return nil, err
 }
 
+// readAuthor Reads one or all authors from the database.
 func (rm *RouteManager) readAuthor(event *eventProto.Event) ([]string, error) {
 	query := utils.DecodeQuery(event.Message)
 	if query.AllEntries {
@@ -56,18 +60,21 @@ func (rm *RouteManager) readAuthor(event *eventProto.Event) ([]string, error) {
 	}
 }
 
+// readAuthorById Reads an author by the passed ID.
 func (rm *RouteManager) readAuthorById(uuid string) ([]string, error) {
 	author, err := rm.connector.GetAuthor(uuid)
 	parsedAuthor := database.AuthorToGrpc(*author)
 	return []string{utils.EncodeAuthorToString(parsedAuthor)}, err
 }
 
+// readAllAuthors Reads all authors from the database.
 func (rm *RouteManager) readAllAuthors() ([]string, error) {
 	authors := rm.connector.GetAuthors()
 	parsedAuthors := database.AuthorListToGrpcList(authors)
 	return []string{utils.EncodeAuthorsListToString(&parsedAuthors)}, nil
 }
 
+// deleteAuthor Deletes one author from the database in case of a valid ID.
 func (rm *RouteManager) deleteAuthor(event *eventProto.Event) ([]string, error) {
 	query := utils.DecodeQuery(event.Message)
 	if query.Uuid == nil {
