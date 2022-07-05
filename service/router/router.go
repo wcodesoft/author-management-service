@@ -2,15 +2,18 @@ package router
 
 import (
 	"errors"
-	eventProto "github.com/wcodesoft/event-manager/protos/go/event-manager.proto"
 	"service/database"
 	"service/utils"
+
+	eventProto "github.com/wcodesoft/event-manager/protos/go/event-manager.proto"
 )
 
+// RouteManager Object holding the necessary properties of the route manager.
 type RouteManager struct {
 	connector database.DbConnector
 }
 
+// NewRouteManager Creates a new RouteManager instance based on passed gorm DbConnector
 func NewRouteManager(connector database.DbConnector) *RouteManager {
 	return &RouteManager{
 		connector: connector,
