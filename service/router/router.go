@@ -2,24 +2,25 @@ package router
 
 import (
 	"errors"
-	eventProto "github.com/wcodesoft/event-manager/protos/go/event-manager.proto"
 	"service/database"
 	"service/utils"
+
+	eventProto "github.com/wcodesoft/event-manager/protos/go/event-manager.proto"
 )
 
-// RouteManager manages the routing of received events.
+// RouteManager Object holding the necessary properties of the route manager.
 type RouteManager struct {
 	connector database.DbConnector
 }
 
-// NewRouteManager creates a new RouteManager instance.
+// NewRouteManager Creates a new RouteManager instance based on passed gorm DbConnector
 func NewRouteManager(connector database.DbConnector) *RouteManager {
 	return &RouteManager{
 		connector: connector,
 	}
 }
 
-// RouteEvent receives an event.Event proto definition that will be routed correctly.
+// RouteEvent Process a received event from the message broker.
 func (rm *RouteManager) RouteEvent(event *eventProto.Event) ([]string, error) {
 	switch event.Action {
 	case eventProto.Action_CREATE:
@@ -34,7 +35,7 @@ func (rm *RouteManager) RouteEvent(event *eventProto.Event) ([]string, error) {
 	return nil, errors.New("action not supported")
 }
 
-//createAuthor creates an Author on the database.
+// createAuthor Creates an author from the information passed on the event.
 func (rm *RouteManager) createAuthor(event *eventProto.Event) ([]string, error) {
 	author := utils.DecodeAuthor(event.Message)
 	uuid, err := rm.connector.AddAuthor(database.AuthorFromGrpc(author))
@@ -42,14 +43,14 @@ func (rm *RouteManager) createAuthor(event *eventProto.Event) ([]string, error) 
 	return []string{parsedUuid}, err
 }
 
-// updateAuthor updates an Author on the database.
+// updateAuthor Updates an author with the new data passed on the event.
 func (rm *RouteManager) updateAuthor(event *eventProto.Event) ([]string, error) {
 	author := utils.DecodeAuthor(event.Message)
 	err := rm.connector.UpdateAuthor(database.AuthorFromGrpc(author))
 	return nil, err
 }
 
-// readAuthor query one or all authors from the database.
+// readAuthor Reads one or all authors from the database.
 func (rm *RouteManager) readAuthor(event *eventProto.Event) ([]string, error) {
 	query := utils.DecodeQuery(event.Message)
 	if query.AllEntries {
@@ -59,21 +60,21 @@ func (rm *RouteManager) readAuthor(event *eventProto.Event) ([]string, error) {
 	}
 }
 
-// readAuthorById get an Author entry by ID.
+// readAuthorById Reads an author by the passed ID.
 func (rm *RouteManager) readAuthorById(uuid string) ([]string, error) {
 	author, err := rm.connector.GetAuthor(uuid)
 	parsedAuthor := database.AuthorToGrpc(*author)
 	return []string{utils.EncodeAuthorToString(parsedAuthor)}, err
 }
 
-// readAllAuthors retrieve all Author entries from the database.
+// readAllAuthors Reads all authors from the database.
 func (rm *RouteManager) readAllAuthors() ([]string, error) {
 	authors := rm.connector.GetAuthors()
 	parsedAuthors := database.AuthorListToGrpcList(authors)
 	return []string{utils.EncodeAuthorsListToString(&parsedAuthors)}, nil
 }
 
-// deleteAuthor deletes an Author from the database.
+// deleteAuthor Deletes one author from the database in case of a valid ID.
 func (rm *RouteManager) deleteAuthor(event *eventProto.Event) ([]string, error) {
 	query := utils.DecodeQuery(event.Message)
 	if query.Uuid == nil {
