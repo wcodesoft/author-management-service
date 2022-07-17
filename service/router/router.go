@@ -39,8 +39,8 @@ func (rm *RouteManager) RouteEvent(event *eventProto.Event) ([]string, error) {
 func (rm *RouteManager) createAuthor(event *eventProto.Event) ([]string, error) {
 	author := utils.DecodeAuthor(event.Message)
 	uuid, err := rm.connector.AddAuthor(database.AuthorFromGrpc(author))
-	parsedUuid := uuid.String()
-	return []string{parsedUuid}, err
+	parsedUUID := uuid.String()
+	return []string{parsedUUID}, err
 }
 
 // updateAuthor Updates an author with the new data passed on the event.
@@ -55,13 +55,12 @@ func (rm *RouteManager) readAuthor(event *eventProto.Event) ([]string, error) {
 	query := utils.DecodeQuery(event.Message)
 	if query.AllEntries {
 		return rm.readAllAuthors()
-	} else {
-		return rm.readAuthorById(query.GetUuid())
 	}
+	return rm.readAuthorByID(query.GetUuid())
 }
 
-// readAuthorById Reads an author by the passed ID.
-func (rm *RouteManager) readAuthorById(uuid string) ([]string, error) {
+// readAuthorByID Reads an author by the passed ID.
+func (rm *RouteManager) readAuthorByID(uuid string) ([]string, error) {
 	author, err := rm.connector.GetAuthor(uuid)
 	parsedAuthor := database.AuthorToGrpc(*author)
 	return []string{utils.EncodeAuthorToString(parsedAuthor)}, err
